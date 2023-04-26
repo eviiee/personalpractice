@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billboard Top 100</title>
+    <!-- 부트스트랩 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+        crossorigin="anonymous"></script>
+    <!-- 구글폰트 -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;500;700&display=swap" rel="stylesheet">
+    <!-- JQuery -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/smoothness/jquery-ui.css">
+
+    <style>
+        * {
+            font-family: 'Montserrat', sans-serif;
+            text-align: center;
+            line-height: 1;
+        }
+
+        .titlewrap {
+            background-color: #222;
+            margin-bottom: 1px;
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 60px;
+            margin-bottom: 0;
+            font-weight: 700;
+            color: white;
+        }
+
+        h2 {
+            font-size: 16px;
+            color: #444;
+        }
+
+
+
+        .clickable:hover {
+            cursor: pointer;
+        }
+
+        .container {
+            width: 970px;
+            height: 200px;
+            background-color: #fff;
+            margin-bottom: 1px;
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container .rank {
+            height: 100%;
+            width: 80px;
+            background-color: #222;
+            font-size: 40px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .container .albumcover {
+            width: 200px;
+            height: 200px;
+            background-color: white;
+        }
+
+        .container>div {
+            height: 100%;
+            line-height: 200px;
+        }
+
+        .container .basicinfo {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .container .basicinfo .trend {
+            font-size: 30px;
+            position: absolute;
+            transform: translateX(-50px);
+        }
+
+        .trend.nochange::after {
+            content: '━';
+        }
+
+        .trend.up::after {
+            content: '▲';
+            color: rgb(26, 155, 26);
+        }
+
+        .trend.down::after {
+            content: '▼';
+            color: rgb(205, 43, 43);
+        }
+
+        .container .basicinfo div {
+            text-align: left;
+            padding-left: 70px;
+        }
+
+        .container .addinfo {
+            width: 70px;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        .container .songtitle {
+            font-size: 40px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            transition: all 0.3s;
+        }
+
+        .container .songtitle:hover {
+            color: #eee;
+        }
+
+        .container .artist {
+            font-size: 20px;
+        }
+
+        .container .artist::before {
+            font-size: 20px;
+            color: #aaa;
+            content: 'by';
+            margin-right: 5px;
+            font-weight: 300;
+        }
+
+        .albumcover img {
+            display: block;
+            width: 100%;
+            height: 100%;
+            transition: all 0.3s;
+        }
+
+        .albumcover img:hover {
+            opacity: 0.2;
+        }
+
+        .albumcover img::after {
+            content: '';
+            position: absolute;
+        }
+
+        .dark {
+            background-color: #eee;
+        }
+    </style>
+
+
+    <script>
+        let redirectUrl = "Kill Bill by Sza"
+
+        function redirect(redirectUrl) {
+            console.log('yes?');
+            window.location.href = "https://www.google.com/search?btnI=I&q=" + redirectUrl;
+        }
+
+        redirectUrl = redirectUrl.replace(' ', '+');
+
+        function bindonclickfunc(ele) {
+            let songtitle = ele.parent().children('.songtitle').text();
+            let songartist = ele.parent().find('.artist').text();
+            console.log(songtitle);
+            let youtubeurl = songtitle + ' by ' + songartist;
+            console.log(youtubeurl);
+            ele.attr("onclick", "redirect('" + youtubeurl + "')");
+            ele.addClass('clickable');
+        }
+
+        $(document).ready(function () {
+            fetch('https://raw.githubusercontent.com/KoreanThinker/billboard-json/main/billboard-hot-100/recent.json').then(res => res.json()).then(data => {
+                $('.fullchart').empty();
+                data['data'].forEach(song => {
+                    let coverimg = song['image']
+                    let songname = song['name']
+                    let artistname = song['artist']
+                    let currank = song['rank']
+                    let peakrank = song['peak_rank']
+                    let lastrank = song['last_week_rank']
+                    if (lastrank === null) {
+                        lastrank = 'new'
+                    }
+                    let onchart = song['weeks_on_chart']
+                    let upordown = currank - lastrank
+                    let trendindicator = 'nochange'
+                    if (upordown > 0) {
+                        trendindicator = 'up'
+                    } else if (upordown < 0) {
+                        trendindicator = 'down'
+                    }
+
+                    let containerhtml = `
+                        <div class="container">
+                            <div class="rank">${currank}</div>
+                            <div class="albumcover"><img
+                                    src="${coverimg}" alt="">
+                            </div>
+                            <div class="basicinfo">
+                                <div class="trend ${trendindicator}"></div>
+                                <div class="songtitle">${songname}</div>
+                                <div class="artist">${artistname}</div>
+                            </div>
+                            <div class="addinfo lastweekrank dark">${lastrank}</div>
+                            <div class="addinfo peakrank">${peakrank}</div>
+                            <div class="addinfo weaksonrank dark">${onchart}</div>
+                        </div>
+                    `
+
+                    $('.fullchart').append(containerhtml)
+
+                    $('.subtitle').text(data['date'])
+                });
+            }).then(function () {
+                $('.songtitle').each(function () {
+                    let elementtoaddonclick = $(this);
+                    bindonclickfunc(elementtoaddonclick);
+                })
+                $('.albumcover').each(function () {
+                    let elementtoaddonclick = $(this);
+                    bindonclickfunc(elementtoaddonclick);
+                })
+            })
+
+
+
+
+
+        });
+    </script>
+</head>
+
+<body>
+
+    <div class="wrap">
+        <div class="titlewrap">
+            <h1 class="title">Billboard Hot 100</h1>
+            <h2 class="subtitle"></h2>
+        </div>
+        <div class="rank1">
+        </div>
+        <div class="fullchart">
+
+            <div class="container">
+                <div class="rank">1</div>
+                <div class="albumcover"><img
+                        src="https://charts-static.billboard.com/img/2022/12/sza-mhq-killbill-6i8-180x180.jpg" alt="">
+                </div>
+                <div class="basicinfo">
+                    <div class="trend up"></div>
+                    <div class="songtitle">Kill Bill</div>
+                    <div class="artist">SZA</div>
+                </div>
+                <div class="addinfo lastweekrank dark">4</div>
+                <div class="addinfo peakrank">1</div>
+                <div class="addinfo weaksonrank dark">19</div>
+            </div>
+
+            <div class="container">
+                <div class="rank">2</div>
+                <div class="albumcover"><img
+                        src="https://charts-static.billboard.com/img/2022/12/sza-mhq-killbill-6i8-180x180.jpg" alt="">
+                </div>
+                <div class="basicinfo">
+                    <div class="trend nochange"></div>
+                    <div class="songtitle">Kill Bill</div>
+                    <div class="artist">SZA</div>
+                </div>
+                <div class="addinfo lastweekrank">2</div>
+                <div class="addinfo peakrank">1</div>
+                <div class="addinfo weaksonrank">5</div>
+            </div>
+
+            <div class="container">
+                <div class="rank">3</div>
+                <div class="albumcover"><img
+                        src="https://charts-static.billboard.com/img/2022/12/sza-mhq-killbill-6i8-180x180.jpg" alt="">
+                </div>
+                <div class="basicinfo">
+                    <div class="trend down"></div>
+                    <div class="songtitle">Kill Bill</div>
+                    <div class="artist">SZA</div>
+                </div>
+                <div class="addinfo lastweekrank">1</div>
+                <div class="addinfo peakrank">1</div>
+                <div class="addinfo weaksonrank">20</div>
+            </div>
+
+        </div>
+    </div>
+</body>
+
+</html>
